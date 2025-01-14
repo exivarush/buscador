@@ -1,13 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Consulta de Guilds e Filtro de Mortes</title>
+  <title>Consulta de Guilds e Mortes</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
+    }
+    h1, h2 {
+      color: #333;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    input, select, button {
+      margin-bottom: 15px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
     }
     .vocation-rp {
       color: orange;
@@ -29,9 +54,10 @@
       color: red;
       font-weight: bold;
     }
-    .results ul {
-      list-style: none;
-      padding: 0;
+    .death-info {
+      margin-left: 20px;
+      font-size: 14px;
+      color: gray;
     }
   </style>
 </head>
@@ -42,15 +68,15 @@
     <input type="text" id="guildName" required>
     <button type="submit">Buscar Guild</button>
   </form>
-  <div class="results">
+  <div id="onlineMembers">
     <h2>Membros Online</h2>
-    <ul id="resultList"></ul>
+    <ul id="membersList"></ul>
   </div>
 
   <h2>Filtrar Integrantes</h2>
   <form id="filterForm">
     <label for="minLevel">Level Mínimo:</label>
-    <input type="number" id="minLevel">
+    <input type="number" id="minLevel" min="0">
     <label for="vocation">Vocação:</label>
     <select id="vocation">
       <option value="">Todas</option>
@@ -61,7 +87,7 @@
     </select>
     <button type="submit">Filtrar</button>
   </form>
-  <div class="results">
+  <div id="filteredResults">
     <h2>Resultados do Filtro</h2>
     <ul id="filterResults"></ul>
   </div>
