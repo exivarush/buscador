@@ -7,7 +7,15 @@ const resultList = document.getElementById("resultList");
 const filterResults = document.getElementById("filterResults");
 
 // Dados para a filtragem
-let guildMembers = [];
+let onlineMembers = [];
+
+// Mapear vocações para abreviações
+const vocationMap = {
+  "Royal Paladin": "RP",
+  "Elder Druid": "ED",
+  "Elite Knight": "EK",
+  "Master Sorcerer": "MS",
+};
 
 // Função para buscar dados da guild
 async function fetchGuildData(guildName) {
@@ -23,39 +31,43 @@ async function fetchGuildData(guildName) {
   }
 }
 
-// Função para exibir integrantes
-function displayMembers(members) {
+// Função para exibir membros online
+function displayOnlineMembers(members) {
   resultList.innerHTML = "";
 
-  if (members.length === 0) {
-    resultList.innerHTML = "<li class='error'>Nenhum membro encontrado.</li>";
+  const onlineMembersFiltered = members.filter((member) => member.status === "online");
+  if (onlineMembersFiltered.length === 0) {
+    resultList.innerHTML = "<li class='error'>Nenhum membro online encontrado.</li>";
     return;
   }
 
-  members.forEach((member) => {
+  onlineMembersFiltered.sort((a, b) => b.level - a.level).forEach((member) => {
     const li = document.createElement("li");
+    const vocationAbbreviation = vocationMap[member.vocation] || "Unknown";
+
     let className = "";
-    switch (member.vocation) {
-      case "Royal Paladin":
+    switch (vocationAbbreviation) {
+      case "RP":
         className = "vocation-rp";
         break;
-      case "Elder Druid":
+      case "ED":
         className = "vocation-ed";
         break;
-      case "Elite Knight":
+      case "EK":
         className = "vocation-ek";
         break;
-      case "Master Sorcerer":
+      case "MS":
         className = "vocation-ms";
         break;
-      default:
-        className = "";
     }
 
     li.className = className;
-    li.innerHTML = `<strong>${member.name}</strong> - Level: ${member.level}, Vocação: ${member.vocation}`;
+    li.innerHTML = `<strong>${member.name}</strong> - Level: ${member.level}, Vocação: ${vocationAbbreviation}`;
     resultList.appendChild(li);
   });
+
+  // Armazena os membros online para filtragem posterior
+  onlineMembers = onlineMembersFiltered;
 }
 
 // Função para buscar mortes
@@ -69,7 +81,7 @@ async function fetchDeaths(characterName) {
       const deathDate = new Date(death.time);
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      return deathDate >= thirtyDaysAgo;
+      return deathDate >= thirtyDaysAgo && death.reason;
     });
   } catch (error) {
     console.error("Erro ao buscar mortes:", error);
@@ -81,9 +93,9 @@ async function fetchDeaths(characterName) {
 async function displayFilteredResults(level, vocation) {
   filterResults.innerHTML = "";
 
-  const filteredMembers = guildMembers.filter((member) => {
+  const filteredMembers = onlineMembers.filter((member) => {
     const matchesLevel = level ? member.level >= level : true;
-    const matchesVocation = vocation ? member.vocation === vocation : true;
+    const matchesVocation = vocation ? vocationMap[member.vocation] === vocation : true;
     return matchesLevel && matchesVocation;
   });
 
@@ -94,19 +106,19 @@ async function displayFilteredResults(level, vocation) {
 
   for (const member of filteredMembers) {
     const li = document.createElement("li");
-    li.innerHTML = `<strong>${member.name}</strong> - Level: ${member.level}, Vocação: ${member.vocation}`;
+    li.innerHTML = `<strong>${member.name}</strong> - Level: ${member.level}, Vocação: ${vocationMap[member.vocation]}`;
     filterResults.appendChild(li);
 
     const deaths = await fetchDeaths(member.name);
     if (deaths.length > 0) {
       deaths.forEach((death) => {
         const deathInfo = document.createElement("p");
-        deathInfo.textContent = `Morte: Level ${death.level}, Causa: ${death.killer}`;
+        deathInfo.textContent = `Morte: Level ${death.level}, Causa: ${death.reason}`;
         li.appendChild(deathInfo);
       });
     } else {
       const noDeathInfo = document.createElement("p");
-      noDeathInfo.textContent = "Nenhuma morte nos últimos 30 dias.";
+      noDeathInfo.textContent = "Nenhuma morte registrada nos últimos 30 dias.";
       li.appendChild(noDeathInfo);
     }
   }
@@ -120,8 +132,8 @@ guildForm.addEventListener("submit", async (event) => {
     alert("Por favor, insira o nome da guild.");
     return;
   }
-  guildMembers = await fetchGuildData(guildName.toLowerCase());
-  displayMembers(guildMembers.sort((a, b) => b.level - a.level));
+  const members = await fetchGuildData(guildName.toLowerCase());
+  displayOnlineMembers(members);
 });
 
 // Evento para filtrar membros
