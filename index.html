@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consulta e Filtro de Guilds</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .vocation-rp {
+      color: orange;
+      font-weight: bold;
+    }
+    .vocation-ed {
+      color: blue;
+      font-weight: bold;
+    }
+    .vocation-ek {
+      color: black;
+      font-weight: bold;
+    }
+    .vocation-ms {
+      color: brown;
+      font-weight: bold;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+    .results ul {
+      list-style: none;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Consulta de Guilds</h1>
+  <form id="guildForm">
+    <label for="guildName">Nome da Guild:</label>
+    <input type="text" id="guildName" required>
+    <button type="submit">Buscar Guild</button>
+  </form>
+  <div class="results">
+    <h2>Integrantes</h2>
+    <ul id="resultList"></ul>
+  </div>
+
+  <h2>Filtrar Integrantes</h2>
+  <form id="filterForm">
+    <label for="minLevel">Level Mínimo:</label>
+    <input type="number" id="minLevel">
+    <label for="vocation">Vocação:</label>
+    <select id="vocation">
+      <option value="">Todas</option>
+      <option value="Royal Paladin">Royal Paladin</option>
+      <option value="Elder Druid">Elder Druid</option>
+      <option value="Elite Knight">Elite Knight</option>
+      <option value="Master Sorcerer">Master Sorcerer</option>
+    </select>
+    <button type="submit">Filtrar</button>
+  </form>
+  <div class="results">
+    <h2>Resultados do Filtro</h2>
+    <ul id="filterResults"></ul>
+  </div>
+
+  <script src="consulta.js"></script>
+</body>
+</html>
