@@ -1,15 +1,15 @@
 const BASE_URL = "https://api.tibiadata.com/v4";
 
-// Elementos HTML
+// Elementos do DOM
 const guildForm = document.getElementById("guildForm");
 const filterForm = document.getElementById("filterForm");
-const resultList = document.getElementById("resultList");
+const membersList = document.getElementById("membersList");
 const filterResults = document.getElementById("filterResults");
 
-// Dados para a filtragem
+// Dados para o filtro
 let onlineMembers = [];
 
-// Mapear vocações para abreviações
+// Mapeamento de vocações
 const vocationMap = {
   "Royal Paladin": "RP",
   "Elder Druid": "ED",
@@ -17,129 +17,119 @@ const vocationMap = {
   "Master Sorcerer": "MS",
 };
 
-// Função para buscar dados da guild
-async function fetchGuildData(guildName) {
+// Buscar membros da guild
+async function fetchGuildMembers(guildName) {
   try {
     const response = await fetch(`${BASE_URL}/guild/${encodeURIComponent(guildName)}`);
-    if (!response.ok) throw new Error("Erro ao buscar dados da API.");
+    if (!response.ok) throw new Error("Erro ao buscar dados da guild.");
     const data = await response.json();
     return data.guild.members || [];
   } catch (error) {
-    console.error("Erro:", error);
-    alert("Erro ao buscar dados. Tente novamente.");
+    console.error(error);
+    alert("Erro ao buscar dados da guild.");
     return [];
   }
 }
 
-// Função para exibir membros online
+// Exibir membros online
 function displayOnlineMembers(members) {
-  resultList.innerHTML = "";
+  membersList.innerHTML = "";
 
-  const onlineMembersFiltered = members.filter((member) => member.status === "online");
-  if (onlineMembersFiltered.length === 0) {
-    resultList.innerHTML = "<li class='error'>Nenhum membro online encontrado.</li>";
+  const online = members.filter((member) => member.status === "online");
+  if (online.length === 0) {
+    membersList.innerHTML = "<li class='error'>Nenhum membro online encontrado.</li>";
     return;
   }
 
-  onlineMembersFiltered.sort((a, b) => b.level - a.level).forEach((member) => {
-    const li = document.createElement("li");
-    const vocationAbbreviation = vocationMap[member.vocation] || "Unknown";
+  online
+    .sort((a, b) => b.level - a.level)
+    .forEach((member) => {
+      const li = document.createElement("li");
+      const vocationAbbr = vocationMap[member.vocation] || "Unknown";
 
-    let className = "";
-    switch (vocationAbbreviation) {
-      case "RP":
-        className = "vocation-rp";
-        break;
-      case "ED":
-        className = "vocation-ed";
-        break;
-      case "EK":
-        className = "vocation-ek";
-        break;
-      case "MS":
-        className = "vocation-ms";
-        break;
-    }
+      li.className = `vocation-${vocationAbbr.toLowerCase()}`;
+      li.innerHTML = `<strong>${member.name}</strong> - Level: ${member.level}, Vocação: ${vocationAbbr}`;
+      membersList.appendChild(li);
+    });
 
-    li.className = className;
-    li.innerHTML = `<strong>${member.name}</strong> - Level: ${member.level}, Vocação: ${vocationAbbreviation}`;
-    resultList.appendChild(li);
-  });
-
-  // Armazena os membros online para filtragem posterior
-  onlineMembers = onlineMembersFiltered;
+  onlineMembers = online; // Salvar membros online para o filtro
 }
 
-// Função para buscar mortes
-async function fetchDeaths(characterName) {
+// Buscar mortes de personagens
+async function fetchCharacterDeaths(characterName) {
   try {
     const response = await fetch(`${BASE_URL}/character/${encodeURIComponent(characterName)}`);
-    if (!response.ok) throw new Error("Erro ao buscar mortes.");
+    if (!response.ok) throw new Error("Erro ao buscar dados do personagem.");
     const data = await response.json();
     const deaths = data.characters.deaths || [];
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
     return deaths.filter((death) => {
       const deathDate = new Date(death.time);
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       return deathDate >= thirtyDaysAgo && death.reason;
     });
   } catch (error) {
-    console.error("Erro ao buscar mortes:", error);
+    console.error(error);
     return [];
   }
 }
 
-// Função para exibir resultados do filtro
+// Exibir resultados do filtro
 async function displayFilteredResults(level, vocation) {
   filterResults.innerHTML = "";
 
-  const filteredMembers = onlineMembers.filter((member) => {
+  const filtered = onlineMembers.filter((member) => {
     const matchesLevel = level ? member.level >= level : true;
     const matchesVocation = vocation ? vocationMap[member.vocation] === vocation : true;
     return matchesLevel && matchesVocation;
   });
 
-  if (filteredMembers.length === 0) {
+  if (filtered.length === 0) {
     filterResults.innerHTML = "<li class='error'>Nenhum membro encontrado com os critérios.</li>";
     return;
   }
 
-  for (const member of filteredMembers) {
+  for (const member of filtered) {
     const li = document.createElement("li");
-    li.innerHTML = `<strong>${member.name}</strong> - Level: ${member.level}, Vocação: ${vocationMap[member.vocation]}`;
+    const vocationAbbr = vocationMap[member.vocation] || "Unknown";
+
+    li.innerHTML = `<strong>${member.name}</strong> - Level: ${member.level}, Vocação: ${vocationAbbr}`;
     filterResults.appendChild(li);
 
-    const deaths = await fetchDeaths(member.name);
+    const deaths = await fetchCharacterDeaths(member.name);
     if (deaths.length > 0) {
       deaths.forEach((death) => {
-        const deathInfo = document.createElement("p");
-        deathInfo.textContent = `Morte: Level ${death.level}, Causa: ${death.reason}`;
+        const deathInfo = document.createElement("div");
+        deathInfo.className = "death-info";
+        deathInfo.textContent = `Morte: Level ${death.level}, Razão: ${death.reason}`;
         li.appendChild(deathInfo);
       });
     } else {
-      const noDeathInfo = document.createElement("p");
+      const noDeathInfo = document.createElement("div");
+      noDeathInfo.className = "death-info";
       noDeathInfo.textContent = "Nenhuma morte registrada nos últimos 30 dias.";
       li.appendChild(noDeathInfo);
     }
   }
 }
 
-// Evento para buscar guild
+// Evento de busca da guild
 guildForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const guildName = document.getElementById("guildName").value.trim();
+  const guildName = document.getElementById("guildName").value.trim().toLowerCase();
   if (!guildName) {
     alert("Por favor, insira o nome da guild.");
     return;
   }
-  const members = await fetchGuildData(guildName.toLowerCase());
+  const members = await fetchGuildMembers(guildName);
   displayOnlineMembers(members);
 });
 
-// Evento para filtrar membros
+// Evento de filtro
 filterForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const minLevel = parseInt(document.getElementById("minLevel").value) || 0;
-  const vocation = document.getElementById("vocation").value || null;
+  const vocation = document.getElementById("vocation").value;
   await displayFilteredResults(minLevel, vocation);
 });
