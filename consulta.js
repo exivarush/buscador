@@ -63,7 +63,7 @@ async function fetchCharacterDeaths(characterName) {
     const data = await response.json();
     const deaths = data.characters.deaths || [];
     const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 0);
 
     return deaths.filter((death) => {
       const deathDate = new Date(death.time);
