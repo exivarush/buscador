@@ -56,24 +56,44 @@ function displayOnlineMembers(members) {
 }
 
 // Buscar mortes de personagens
-async function fetchCharacterDeaths(characterName) {
-  try {
-    const response = await fetch(`${BASE_URL}/character/${encodeURIComponent(characterName)}`);
-    if (!response.ok) throw new Error("Erro ao buscar dados do personagem.");
-    const data = await response.json();
-    const deaths = data.characters.deaths || [];
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 0);
-
-    return deaths.filter((death) => {
-      const deathDate = new Date(death.time);
-      return deathDate >= thirtyDaysAgo && death.reason;
-    });
-  } catch (error) {
-    console.error(error);
-    return [];
+function extractRelevantData(data) {
+  if (!data || !data.character) {
+    return null;
   }
+
+  const { name, deaths } = data.character.character;
+  const relevantDeaths = deaths?.map(death => ({
+    time: death.time,
+    reason: death.reason,
+  })) || [];
+
+  return {
+    name,
+    deaths: relevantDeaths,
+  };
 }
+
+// Exemplo de uso
+const rawData = {
+  character: {
+    character: {
+      name: "John Doe",
+    },
+    deaths: [
+      {
+        time: "2025-01-01T12:34:56Z",
+        reason: "Killed by a dragon",
+      },
+      {
+        time: "2025-01-02T08:23:45Z",
+        reason: "Killed by a demon",
+      },
+    ],
+  },
+};
+
+const result = extractRelevantData(rawData);
+console.log(result);
 
 // Exibir resultados do filtro
 async function displayFilteredResults(level, vocation) {
