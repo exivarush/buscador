@@ -1,15 +1,25 @@
 // Função para buscar informações da guild
 async function buscarGuild() {
-  const guildName = document.getElementById('guildName').value.toLowerCase();
+  const guildName = document.getElementById('guildName').value.trim().toLowerCase();
   const response = await fetch(`https://api.tibiadata.com/v4/guild/${encodeURIComponent(guildName)}`);
   const data = await response.json();
 
+  if (!data.guild || !data.guild.members) {
+    alert('Guild não encontrada ou sem membros disponíveis.');
+    return;
+  }
+
   const membrosOnline = data.guild.members
-    .flatMap(group => group.online_status.filter(member => member.status === 'online'))
+    .flatMap(group => group.members.filter(member => member.status === 'online'))
     .sort((a, b) => b.level - a.level);
 
   const guildMembers = document.getElementById('guildMembers');
   guildMembers.innerHTML = '';
+  if (membrosOnline.length === 0) {
+    guildMembers.innerHTML = '<p>Nenhum membro online encontrado.</p>';
+    return;
+  }
+
   membrosOnline.forEach(member => {
     const li = document.createElement('li');
     li.style.color = getVocationColor(member.vocation);
@@ -20,20 +30,30 @@ async function buscarGuild() {
 
 // Função para buscar mortes dos membros online
 async function buscarMortes() {
-  const guildName = document.getElementById('guildName').value.toLowerCase();
+  const guildName = document.getElementById('guildName').value.trim().toLowerCase();
   const response = await fetch(`https://api.tibiadata.com/v4/guild/${encodeURIComponent(guildName)}`);
   const data = await response.json();
 
+  if (!data.guild || !data.guild.members) {
+    alert('Guild não encontrada ou sem membros disponíveis.');
+    return;
+  }
+
   const membrosOnline = data.guild.members
-    .flatMap(group => group.online_status.filter(member => member.status === 'online'));
+    .flatMap(group => group.members.filter(member => member.status === 'online'));
 
   const mortesList = document.getElementById('mortesList');
   mortesList.innerHTML = '';
 
+  if (membrosOnline.length === 0) {
+    mortesList.innerHTML = '<p>Nenhum membro online para buscar mortes.</p>';
+    return;
+  }
+
   for (const member of membrosOnline) {
     const charResponse = await fetch(`https://api.tibiadata.com/v4/character/${encodeURIComponent(member.name)}`);
     const charData = await charResponse.json();
-    const mortes = charData.character.deaths;
+    const mortes = charData.character.deaths || [];
 
     mortes.forEach(morte => {
       const li = document.createElement('li');
