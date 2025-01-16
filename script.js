@@ -1,63 +1,85 @@
-async function consultarGuild() {
-    const guildName = document.getElementById('guildName').value.toLowerCase();
-    const response = await fetch(`https://api.tibiadata.com/v4/guild/${encodeURIComponent(guildName)}`);
-    const data = await response.json();
-    const membros = data.guild.members;
-    const onlineMembros = membros.filter(membro => membro.status === 'online').sort((a, b) => b.level - a.level);
+// Função para buscar informações da guild
+async function buscarGuild() {
+  const guildName = document.getElementById('guildName').value.toLowerCase();
+  const response = await fetch(`https://api.tibiadata.com/v4/guild/${encodeURIComponent(guildName)}`);
+  const data = await response.json();
 
-    document.getElementById('totalOnline').innerText = onlineMembros.length;
-    const listaOnline = document.getElementById('listaOnline');
-    listaOnline.innerHTML = '';
+  const membrosOnline = data.guild.members
+    .flatMap(group => group.online_status.filter(member => member.status === 'online'))
+    .sort((a, b) => b.level - a.level);
 
-    onlineMembros.forEach(membro => {
-        const li = document.createElement('li');
-        li.className = membro.vocation.replace(' ', '');
-        li.innerHTML = `${membro.name} - Level ${membro.level} - ${membro.vocation.replace('Royal Paladin', 'RP').replace('Elder Druid', 'ED').replace('Elite Knight', 'EK').replace('Master Sorcerer', 'MS')}`;
-        listaOnline.appendChild(li);
+  const guildMembers = document.getElementById('guildMembers');
+  guildMembers.innerHTML = '';
+  membrosOnline.forEach(member => {
+    const li = document.createElement('li');
+    li.style.color = getVocationColor(member.vocation);
+    li.innerHTML = `<strong>${member.name}</strong> - Level: ${member.level} - ${formatVocation(member.vocation)}`;
+    guildMembers.appendChild(li);
+  });
+}
+
+// Função para buscar mortes dos membros online
+async function buscarMortes() {
+  const guildName = document.getElementById('guildName').value.toLowerCase();
+  const response = await fetch(`https://api.tibiadata.com/v4/guild/${encodeURIComponent(guildName)}`);
+  const data = await response.json();
+
+  const membrosOnline = data.guild.members
+    .flatMap(group => group.online_status.filter(member => member.status === 'online'));
+
+  const mortesList = document.getElementById('mortesList');
+  mortesList.innerHTML = '';
+
+  for (const member of membrosOnline) {
+    const charResponse = await fetch(`https://api.tibiadata.com/v4/character/${encodeURIComponent(member.name)}`);
+    const charData = await charResponse.json();
+    const mortes = charData.character.deaths;
+
+    mortes.forEach(morte => {
+      const li = document.createElement('li');
+      li.style.color = getVocationColor(member.vocation);
+      li.innerHTML = `<strong>${member.name}</strong> - ${formatVocation(member.vocation)} - ${new Date(morte.time).toLocaleString()} - ${morte.reason}`;
+      mortesList.appendChild(li);
     });
-
-    document.getElementById('popup').style.display = 'block';
-    setTimeout(consultarGuild, 180000); // Atualiza a cada 3 minutos
+  }
 }
 
-async function consultarMortes() {
-    const guildName = document.getElementById('guildName').value.toLowerCase();
-    const response = await fetch(`https://api.tibiadata.com/v4/guild/${encodeURIComponent(guildName)}`);
-    const data = await response.json();
-    const membros = data.guild.members;
-    const onlineMembros = membros.filter(membro => membro.status === 'online');
+// Função para buscar boosts
+async function buscarBoosts() {
+  const bossResponse = await fetch('https://api.tibiadata.com/v4/boostablebosses');
+  const bossData = await bossResponse.json();
+  document.getElementById('bossBoost').innerHTML = `<strong>${bossData.boosted_boss.name}</strong> <img src="${bossData.boosted_boss.image_url}" alt="Boss Boostado">`;
 
-    const resultados = document.getElementById('resultados');
-    resultados.innerHTML = '';
-
-    for (const membro of onlineMembros) {
-        const response = await fetch(`https://api.tibiadata.com/v4/character/${encodeURIComponent(membro.name)}`);
-        const data = await response.json();
-        const mortesPersonagem = data.character.deaths;
-
-        mortesPersonagem.forEach(morte => {
-            const div = document.createElement('div');
-            div.className = membro.vocation.replace(' ', '');
-            div.innerHTML = `${membro.name} - Level ${morte.level} - ${membro.vocation.replace('Royal Paladin', 'RP').replace('Elder Druid', 'ED').replace('Elite Knight', 'EK').replace('Master Sorcerer', 'MS')} - ${new Date(morte.time).toLocaleString()} - ${morte.reason}`;
-            resultados.appendChild(div);
-        });
-    }
+  const creatureResponse = await fetch('https://api.tibiadata.com/v4/creatures');
+  const creatureData = await creatureResponse.json();
+  document.getElementById('creatureBoost').innerHTML = `<strong>${creatureData.boosted_creature.name}</strong> <img src="${creatureData.boosted_creature.image_url}" alt="Criatura Boostada">`;
 }
 
-async function consultarBoostados() {
-    const bossResponse = await fetch('https://api.tibiadata.com/v4/boostablebosses');
-    const bossData = await bossResponse.json();
-    const criaturaResponse = await fetch('https://api.tibiadata.com/v4/creatures');
-    const criaturaData = await criaturaResponse.json();
-
-    const bossBoostado = document.getElementById('bossBoostado');
-    bossBoostado.innerHTML = `<strong>Boss Boostado:</strong> ${bossData.boostable_bosses.current.name} <img src="${bossData.boostable_bosses.current.image_url}" alt="${bossData.boostable_bosses.current.name}">`;
-
-    const criaturaBoostada = document.getElementById('criaturaBoostada');
-    criaturaBoostada.innerHTML = `<strong>Criatura Boostada:</strong> ${criaturaData.creatures.boosted.name} <img src="${criaturaData.creatures.boosted.image_url}" alt="${criaturaData.creatures.boosted.name}">`;
+// Função para mostrar a localização do Rashid
+function mostrarRashid() {
+  const locations = ['Svargrond', 'Liberty Bay', 'Port Hope', 'Ankrahmun', 'Darashia', 'Edron', 'Carlin'];
+  const today = new Date().getDay();
+  const rashidLocation = locations[today];
+  document.getElementById('rashidLocation').innerHTML = `<strong>Está em ${rashidLocation}</strong>`;
 }
 
-function consultarRashid() {
-    const rashid = document.getElementById('rashid');
-    const dias = ['Svargrond', 'Liberty Bay', 'Port Hope', 'Ankrahmun', 'Darashia', 'Edron', 'Carlin'];
-    const hoje =
+// Funções auxiliares
+function getVocationColor(vocation) {
+  switch (vocation) {
+    case 'Royal Paladin': return 'orange';
+    case 'Elder Druid': return 'green';
+    case 'Elite Knight': return 'black';
+    case 'Master Sorcerer': return 'red';
+    default: return 'white';
+  }
+}
+
+function formatVocation(vocation) {
+  return vocation.replace('Royal Paladin', 'RP').replace('Elder Druid', 'ED').replace('Elite Knight', 'EK').replace('Master Sorcerer', 'MS');
+}
+
+// Inicializar página
+document.addEventListener('DOMContentLoaded', () => {
+  buscarBoosts();
+  mostrarRashid();
+});

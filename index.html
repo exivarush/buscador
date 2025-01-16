@@ -1,84 +1,54 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta de Guild</title>
-    <style>
-        body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        h1 {
-            color: #ffd700;
-        }
-        input, select, button {
-            display: block;
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-        }
-        button {
-            background-color: #ff4500;
-            color: #ffffff;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #ff6347;
-        }
-        .popup {
-            background-color: #333333;
-            border: 2px solid #ffd700;
-            padding: 20px;
-            border-radius: 10px;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: none;
-            z-index: 1000;
-        }
-        .popup h2 {
-            color: #ffd700;
-        }
-        .popup ul {
-            list-style: none;
-            padding: 0;
-        }
-        .popup ul li {
-            margin-bottom: 10px;
-        }
-        .EK { color: black; font-weight: bold; }
-        .MS { color: red; font-weight: bold; }
-        .ED { color: green; font-weight: bold; }
-        .RP { color: orange; font-weight: bold; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tibia Info</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Consulta de Guild</h1>
-        <input type="text" id="guildName" placeholder="Nome da Guild">
-        <button onclick="consultarGuild()">Buscar Guild</button>
-        <button onclick="consultarMortes()">Buscar Mortes Online</button>
-        <div id="resultados"></div>
-        <div id="bossBoostado"></div>
-        <div id="criaturaBoostada"></div>
-        <div id="rashid"></div>
-    </div>
-    <div class="popup" id="popup">
-        <h2>Resultado da Busca</h2>
-        <p><strong>Total Online:</strong> <span id="totalOnline"></span></p>
-        <ul id="listaOnline"></ul>
-        <button onclick="fecharPopup()">Fechar</button>
-    </div>
-    <script src="script.js"></script>
+  <header>
+    <h1 style="color: gold; text-align: center;">Tibia Info</h1>
+  </header>
+  <main>
+    <!-- Campo de busca de guild -->
+    <section>
+      <h2>Buscar Guild</h2>
+      <input type="text" id="guildName" placeholder="Digite o nome da guild" />
+      <button onclick="buscarGuild()">Buscar</button>
+      <div id="guildResultados">
+        <h3>Resultado:</h3>
+        <ul id="guildMembers"></ul>
+      </div>
+    </section>
+
+    <!-- Campo de busca de mortes online -->
+    <section>
+      <h2>Buscar Mortes</h2>
+      <button onclick="buscarMortes()">Buscar Mortes</button>
+      <div id="mortesResultados">
+        <ul id="mortesList"></ul>
+      </div>
+    </section>
+
+    <!-- Campo de Boss Boostado e Criatura Boostada -->
+    <section>
+      <h2>Boosts Atuais</h2>
+      <div id="boosts">
+        <div id="bossBoost"></div>
+        <div id="creatureBoost"></div>
+      </div>
+    </section>
+
+    <!-- Campo de Rashid -->
+    <section>
+      <h2>Rashid Hoje</h2>
+      <div id="rashid">
+        <img id="rashidImg" src="https://www.tibiawiki.com.br/wiki/Arquivo:Rashid.gif" alt="Rashid">
+        <p id="rashidLocation"></p>
+      </div>
+    </section>
+  </main>
+  <script src="script.js"></script>
 </body>
 </html>
