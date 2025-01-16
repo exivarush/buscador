@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Busca de Mortes Online</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .result {
+            font-weight: bold;
+        }
+        .character {
+            margin-bottom: 10px;
+        }
+        .EK { color: black; font-weight: bold; }
+        .MS { color: red; font-weight: bold; }
+        .ED { color: green; font-weight: bold; }
+        .RP { color: orange; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Busca de Mortes Online</h1>
+    <input type="text" id="guildName" placeholder="Nome da Guild">
+    <button onclick="searchDeaths()">Buscar</button>
+    <div id="result"></div>
+
+    <script>
+        async function searchDeaths() {
+            const guildName = document.getElementById('guildName').value;
+            const guildResponse = await fetch(`https://api.tibiadata.com/v4/guild/${guildName}`);
+            const guildData = await guildResponse.json();
+            const onlineMembers = guildData.guild.members.filter(member => member.status === 'online');
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result">Resultado: Mortes Online</div>`;
+            for (const member of onlineMembers) {
+                const charResponse = await fetch(`https://api.tibiadata.com/v4/character/${member.name}`);
+                const charData = await charResponse.json();
+                const vocationClass = getVocationClass(charData.character.vocation);
+                charData.character.deaths.forEach(death => {
+                    resultDiv.innerHTML += `<div class="character ${vocationClass}">${charData.character.name}, Vocação: ${vocationClass}, Mortes: ${death.reason}, Tempo: ${death.time}</div>`;
+                });
+            }
+        }
+
+        function getVocationClass(vocation) {
+            switch (vocation) {
+                case 'Elite Knight': return 'EK';
+                case 'Master Sorcerer': return 'MS';
+                case 'Elder Druid': return 'ED';
+                case 'Royal Paladin': return 'RP';
+                default: return '';
+            }
+        }
+    </script>
+</body>
+</html>

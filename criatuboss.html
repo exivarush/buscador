@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Boss e Criatura Boostada</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .result {
+            font-weight: bold;
+        }
+        .boss, .creature {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Boss e Criatura Boostada</h1>
+    <button onclick="fetchBoosted()">Buscar</button>
+    <div id="result"></div>
+
+    <script>
+        async function fetchBoosted() {
+            const bossResponse = await fetch('https://api.tibiadata.com/v4/boostablebosses');
+            const bossData = await bossResponse.json();
+            const creatureResponse = await fetch('https://api.tibiadata.com/v4/creatures');
+            const creatureData = await creatureResponse.json();
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result">Boss Boostado: <b>${bossData.boosted_boss.name}</b></div>`;
+            resultDiv.innerHTML += `<div class="boss"><img src="${bossData.boosted_boss.image_url}" alt="${bossData.boosted_boss.name}"></div>`;
+            resultDiv.innerHTML += `<div class="result">Criatura Boostada: <b>${creatureData.boosted_creature.name}</b></div>`;
+            resultDiv.innerHTML += `<div class="creature"><img src="${creatureData.boosted_creature.image_url}" alt="${creatureData.boosted_creature.name}"></div>`;
+        }
+    </script>
+</body>
+</html>

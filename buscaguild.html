@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Busca de Guild</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .result {
+            font-weight: bold;
+        }
+        .character {
+            margin-bottom: 10px;
+        }
+        .EK { color: black; font-weight: bold; }
+        .MS { color: red; font-weight: bold; }
+        .ED { color: green; font-weight: bold; }
+        .RP { color: orange; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Busca de Guild</h1>
+    <input type="text" id="guildName" placeholder="Nome da Guild">
+    <button onclick="searchGuild()">Buscar</button>
+    <div id="result"></div>
+
+    <script>
+        async function searchGuild() {
+            const guildName = document.getElementById('guildName').value;
+            const response = await fetch(`https://api.tibiadata.com/v4/guild/${guildName}`);
+            const data = await response.json();
+            const onlineMembers = data.guild.members.filter(member => member.status === 'online');
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result">Resultado: Total Online (${onlineMembers.length})</div>`;
+            onlineMembers.sort((a, b) => b.level - a.level).forEach(member => {
+                const vocationClass = getVocationClass(member.vocation);
+                resultDiv.innerHTML += `<div class="character ${vocationClass}">${member.name}, Level: ${member.level}, Vocação: ${vocationClass}</div>`;
+            });
+        }
+
+        function getVocationClass(vocation) {
+            switch (vocation) {
+                case 'Elite Knight': return 'EK';
+                case 'Master Sorcerer': return 'MS';
+                case 'Elder Druid': return 'ED';
+                case 'Royal Paladin': return 'RP';
+                default: return '';
+            }
+        }
+
+        setInterval(searchGuild, 180000); // Atualiza a cada 3 minutos
+    </script>
+</body>
+</html>

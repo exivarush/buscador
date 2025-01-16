@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Localização do Rashid</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .location {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Localização do Rashid</h1>
+    <div id="rashidLocation"></div>
+    <script>
+        const rashidLocations = {
+            'Monday': 'Svargrond',
+            'Tuesday': 'Liberty Bay',
+            'Wednesday': 'Port Hope',
+            'Thursday': 'Ankrahmun',
+            'Friday': 'Darashia',
+            'Saturday': 'Edron',
+            'Sunday': 'Carlin'
+        };
+
+        function getRashidLocation() {
+            const today = new Date().toLocaleString('en-US', { weekday: 'long' });
+            return rashidLocations[today];
+        }
+
+        document.getElementById('rashidLocation').innerHTML = `
+            <img src="https://www.tibiawiki.com.br/wiki/Arquivo:Rashid.gif" alt="Rashid">
+            <div class="location">Rashid está em ${getRashidLocation()}</div>
+        `;
+    </script>
+</body>
+</html>
